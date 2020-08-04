@@ -1,0 +1,93 @@
+#FootRig
+import maya.cmds as pm
+sel = pm.ls(sl=True)
+
+jointNul11=sel[0]
+jointStart1 = sel[3]
+jointMid1= sel[2]
+jointEnd1 = sel[1]
+name = jointStart1
+name_List = name.split('_')
+
+name1 = jointNul11 
+name_List1 = name1.split('_')
+
+footName = name_List1[0]+ "_"+ name_List1[1]+"_Foot_Ctrl"
+
+name_ikHandle1=name_List1[0]+'_'+name_List1[1]+'_ToeBase_ToToe_End_SC' 
+name_ikHandle2=name_List1[0]+'_'+name_List1[1]+'_Heel_ToToe_Base_SC'
+ikHandleToeBase=cmds.ikHandle(n=name_ikHandle1,sj= jointMid1, ee=jointEnd1,sol='ikSCsolver')
+ikHandleHeel=cmds.ikHandle(n=name_ikHandle2,sj= jointStart1, ee=jointMid1,sol='ikSCsolver')
+
+TRAFoot= cmds.xform(jointStart1,ws=True, q=True, t=True)
+ROTFoot= cmds.xform(jointStart1,ws=True, q=True, ro=True)
+
+TRAjn= cmds.xform(jointNul11,ws=True, q=True, t=True)
+ROTjn= cmds.xform(jointNul11,ws=True, q=True, ro=True)
+
+TRAjs= cmds.xform(jointStart1,ws=True, q=True, t=True)
+ROTjs= cmds.xform(jointStart1,ws=True, q=True, ro=True)
+
+TRAjm= cmds.xform(jointMid1,ws=True, q=True, t=True)
+ROTjm= cmds.xform(jointMid1,ws=True, q=True, ro=True)
+
+TRAje= cmds.xform(jointEnd1,ws=True, q=True, t=True)
+ROTje= cmds.xform(jointEnd1,ws=True, q=True, ro=True)
+
+tp_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_Toes_Pivot_Grp")
+cmds.xform (tp_Grp, ws=True, t=TRAjn)
+cmds.setAttr(tp_Grp+'.translateY',0)
+
+rt_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_Roll_Toes_Grp")
+cmds.xform (rt_Grp, ws=True, t=TRAjm)
+
+tbtte_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_ToeBase_To_ToeEnd_Grp")
+cmds.xform (tbtte_Grp, ws=True, t=TRAjm)
+
+hp_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_Heel_Pivot_Grp")
+cmds.xform (hp_Grp, ws=True, t=TRAjs)
+cmds.setAttr(hp_Grp+'.translateY',0)
+
+frt_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_FootRig_Top_Grp")
+cmds.xform (frt_Grp, ws=True, t=TRAjs)
+
+foot_Ctrl = mel.eval("$zmienna = `curve -d 1 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 "
+                          "-p -0.5 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 "
+                          "-0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p -0.5 0.5 0.5 -p -0.5 "
+                          "-0.5 0.5 -p -0.5 -0.5 -0.5 -p -0.5 0.5 -0.5 -p 0.5 0.5 -0.5 "
+                          "-p 0.5 -0.5 -0.5 -p -0.5 -0.5 -0.5 -p -0.5 -0.5 0.5 -p 0.5 "
+                          "-0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 "
+                          "-k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 `;")
+foot_Ctrl=cmds.rename(footName)
+cmds.select(foot_Ctrl)
+cmds.addAttr(sn='ssr', ln='ShoulderSystemRatio', nn='Shoulder System Ratio', dv=.25, min=0.000 , max=1.000, k=True)
+cmds.addAttr(sn='br', ln='BallRoll', nn='Ball Roll', min=0.000 , max=10.000, k=True)
+cmds.addAttr(sn='hr', ln='HeelRoll', nn='Heel Roll', min=-10.000 , max=10.000, k=True)
+cmds.addAttr(sn='rt', ln='RollToes', nn='Roll Toes', min=-10.000 , max=10.000, k=True)
+cmds.addAttr(sn='tr', ln='ToeRoll', nn='Toe Roll', min=0.000 , max=10.000, k=True)
+foot_Ctrl_Drv= cmds.group (n=foot_Ctrl+"_drv")
+foot_Ctrl_Grp= cmds.group (n=foot_Ctrl+"_grp")  
+cmds.xform (foot_Ctrl_Grp, ws=True, t=TRAFoot)
+
+#parent
+cmds.parent(name_ikHandle1,rt_Grp)
+cmds.parent(name_ikHandle2,tp_Grp)
+cmds.parent(rt_Grp,tbtte_Grp)
+cmds.parent(tbtte_Grp,tp_Grp)
+cmds.parent(tp_Grp,hp_Grp)
+cmds.parent(hp_Grp,frt_Grp)
+cmds.parent(foot_Ctrl_Grp,tbtte_Grp)
+
+cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=0,v=0)
+cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=-10,v=-60)
+cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=10,v=60)
+
+cmds.setDrivenKeyframe(hp_Grp,at='rotateX', cd=foot_Ctrl+'.HeelRoll',dv=0,v=0)
+cmds.setDrivenKeyframe(hp_Grp,at='rotateX', cd=foot_Ctrl+'.HeelRoll',dv=-10,v=-60)
+cmds.setDrivenKeyframe(hp_Grp,at='rotateX', cd=foot_Ctrl+'.HeelRoll',dv=10,v=60)
+
+cmds.setDrivenKeyframe(tp_Grp,at='rotateX', cd=foot_Ctrl+'.ToeRoll',dv=0,v=0)
+cmds.setDrivenKeyframe(tp_Grp,at='rotateX', cd=foot_Ctrl+'.ToeRoll',dv=10,v=-60)
+
+cmds.setDrivenKeyframe(tbtte_Grp,at='rotateX', cd=foot_Ctrl+'.BallRoll',dv=0,v=0)
+cmds.setDrivenKeyframe(tbtte_Grp,at='rotateX', cd=foot_Ctrl+'.BallRoll',dv=10,v=60)
