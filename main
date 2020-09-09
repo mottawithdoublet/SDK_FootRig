@@ -6,6 +6,8 @@ jointNul11=sel[0]
 jointStart1 = sel[3]
 jointMid1= sel[2]
 jointEnd1 = sel[1]
+
+#Gets correct name for nomenclature
 name = jointStart1
 name_List = name.split('_')
 
@@ -14,11 +16,14 @@ name_List1 = name1.split('_')
 
 footName = name_List1[0]+ "_"+ name_List1[1]+"_Foot_Ctrl"
 
+#Creates IKHandle SC for from Heel to Toe and Toe to Toe base
 name_ikHandle1=name_List1[0]+'_'+name_List1[1]+'_ToeBase_ToToe_End_SC' 
 name_ikHandle2=name_List1[0]+'_'+name_List1[1]+'_Heel_ToToe_Base_SC'
 ikHandleToeBase=cmds.ikHandle(n=name_ikHandle1,sj= jointMid1, ee=jointEnd1,sol='ikSCsolver')
 ikHandleHeel=cmds.ikHandle(n=name_ikHandle2,sj= jointStart1, ee=jointMid1,sol='ikSCsolver')
 
+
+#Obtaisn location of joints for reference
 TRAFoot= cmds.xform(jointStart1,ws=True, q=True, t=True)
 ROTFoot= cmds.xform(jointStart1,ws=True, q=True, ro=True)
 
@@ -34,6 +39,7 @@ ROTjm= cmds.xform(jointMid1,ws=True, q=True, ro=True)
 TRAje= cmds.xform(jointEnd1,ws=True, q=True, t=True)
 ROTje= cmds.xform(jointEnd1,ws=True, q=True, ro=True)
 
+#Creates groups and places them in the "cross" pattern for SDK
 tp_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_Toes_Pivot_Grp")
 cmds.xform (tp_Grp, ws=True, t=TRAjn)
 cmds.setAttr(tp_Grp+'.translateY',0)
@@ -51,6 +57,7 @@ cmds.setAttr(hp_Grp+'.translateY',0)
 frt_Grp= cmds.group (em=True, n= name_List1[0]+'_'+name_List1[1]+"_FootRig_Top_Grp")
 cmds.xform (frt_Grp, ws=True, t=TRAjs)
 
+#Creates control for Foot rig and adds attributes for Ball Roll, Heel Roll, etc.
 foot_Ctrl = mel.eval("$zmienna = `curve -d 1 -p 0.5 0.5 -0.5 -p -0.5 0.5 -0.5 "
                           "-p -0.5 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 -0.5 -p 0.5 -0.5 "
                           "-0.5 -p 0.5 -0.5 0.5 -p 0.5 0.5 0.5 -p -0.5 0.5 0.5 -p -0.5 "
@@ -69,7 +76,7 @@ foot_Ctrl_Drv= cmds.group (n=foot_Ctrl+"_drv")
 foot_Ctrl_Grp= cmds.group (n=foot_Ctrl+"_grp")  
 cmds.xform (foot_Ctrl_Grp, ws=True, t=TRAFoot)
 
-#parent
+#Correctly parents the groups and ik handles
 cmds.parent(name_ikHandle1,rt_Grp)
 cmds.parent(name_ikHandle2,tp_Grp)
 cmds.parent(rt_Grp,tbtte_Grp)
@@ -78,6 +85,7 @@ cmds.parent(tp_Grp,hp_Grp)
 cmds.parent(hp_Grp,frt_Grp)
 cmds.parent(foot_Ctrl_Grp,tbtte_Grp)
 
+#Creates SDK for each group and foot rig attributes
 cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=0,v=0)
 cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=-10,v=-60)
 cmds.setDrivenKeyframe(rt_Grp,at='rotateX', cd=foot_Ctrl+'.RollToes',dv=10,v=60)
